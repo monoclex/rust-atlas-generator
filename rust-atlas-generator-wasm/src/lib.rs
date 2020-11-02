@@ -54,8 +54,10 @@ pub fn pack(args: &JsValue) -> JsValue {
     //
     // the part surrounded in brackets is what repeats,
     // so we calculate that and multiply that by how many tiles we have
-    let img_width = (1 + 1 + tile_width + 1) * width;
-    let img_height = (1 + 1 + tile_height + 1) * height;
+    //
+    // then we add one to the end so that there's even spacing all around
+    let img_width = (1 + 1 + tile_width + 1) * width + 1;
+    let img_height = (1 + 1 + tile_height + 1) * height + 1;
 
     let mut img: RgbaImage = ImageBuffer::new(img_width, img_height);
 
