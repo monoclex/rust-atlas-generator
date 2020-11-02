@@ -1,6 +1,6 @@
 {
   "name": "rust-atlas-generator-webpack-plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Generates an atlas from a directory pre-build.",
   "main": "index.js",
   "license": "MIT",

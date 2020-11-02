@@ -64,8 +64,9 @@ const plugin = ({ sourceDir, targetDir, width, height }) => {
   };
 };
 
+/** @template T @param {T[]} a @param {T[]} b */
 function arrContentEq(a, b) {
-  for (const x in a) {
+  for (const x of a) {
     if (b.indexOf(x) < 0) return false;
   }
   return true;
