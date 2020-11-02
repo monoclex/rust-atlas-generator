@@ -1,15 +1,14 @@
 const { pack } = require("rust-atlas-generator-wasm");
-const PrebuildWebpackPlugin = require("prebuild-webpack-plugin");
 const { promises: fs } = require("fs");
 const path = require("path");
 
-/** @type {(args: { sourceDir: string, targetDir: string, width: number, height: number }) => PrebuildWebpackPlugin} */
+/** @type {(args: { sourceDir: string, targetDir: string, width: number, height: number }) => { apply: (compiler: import("webpack").Compiler) => void }} */
 const plugin = ({ sourceDir, targetDir, width, height }) => {
   /** @type {string[]} */
   let files = [];
 
   /** @param {string[]} files */
-  async function rebuild(files, out) {
+  async function rebuild(files) {
     /** @type {[string, Buffer][]} */
     let buffers = [];
 
@@ -26,36 +25,50 @@ const plugin = ({ sourceDir, targetDir, width, height }) => {
       tiles: buffers.map(([name, buffer]) => ({ name, image: [...buffer] })),
     });
 
-    const jsonPromise = fs.writeFile(out + "/atlas_atlas.json", json);
-    const pngPromise = fs.writeFile(out + "/atlas.png", new Uint8Array(png));
+    const jsonPromise = fs.writeFile(targetDir + "/atlas_atlas.json", json);
+    const pngPromise = fs.writeFile(targetDir + "/atlas.png", new Uint8Array(png));
     await Promise.all([jsonPromise, pngPromise]);
   }
 
-  return new PrebuildWebpackPlugin({
-    /** @type {(compiler: import("webpack").Compiler, compilation: import("webpack").compilation.Compilation, matchedFiles: string[]) => Promise<void>} */
-    build: async (compiler, compilation, matchedFiles) => {
-      files = matchedFiles;
-      await rebuild(files, targetDir);
-    },
-    /** @type {(compiler: import("webpack").Compiler, compilation: import("webpack").compilation.Compilation, changedFiles: string[]) => Promise<void>} */
-    //@ts-ignore
-    watch: async (compiler, compilation, changedFiles) => {
-      // sanity checking this callback because i don't nkow what type it is, there's no ts defs
-      if (!Array.isArray(changedFiles)) {
-        if (typeof changedFiles !== "string") throw new Error("don't know what to do");
-        changedFiles = [changedFiles];
-      }
+  return {
+    /** @type {(compiler: import("webpack").Compiler) => void} */
+    apply: (compiler) => {
+      const PLUGIN_NAME = "RustAtlasGeneratorWebpackPlugin";
 
-      for (const file of changedFiles) {
-        if (files.indexOf(file) >= 0) continue;
-        files.push(file);
-      }
+      const listFiles = async () =>
+        (await fs.readdir(sourceDir)).map((file) => path.resolve(path.join(sourceDir, file)));
 
-      await rebuild(files, targetDir);
+      compiler.hooks.beforeRun.tapPromise(PLUGIN_NAME, async (compilation) => {
+        const files = await listFiles();
+        await rebuild(files);
+      });
+
+      let firstRun = true;
+      let lastFiles = [];
+      compiler.hooks.watchRun.tapPromise(PLUGIN_NAME, async (compilation) => {
+        const files = await listFiles();
+
+        if (firstRun) {
+          firstRun = false;
+          lastFiles = files;
+          await rebuild(files);
+        }
+        // yes i know these two branches could be merged
+        // no i'm not because the code is easier to read
+        else if (!arrContentEq(files, lastFiles)) {
+          lastFiles = files;
+          await rebuild(files);
+        }
+      });
     },
-    files: { pattern: sourceDir + "/*.png", options: {}, addFilesAsDependencies: false },
-    compilationNameFilter: undefined,
-  });
+  };
 };
+
+function arrContentEq(a, b) {
+  for (const x in a) {
+    if (b.indexOf(x) < 0) return false;
+  }
+  return true;
+}
 
 module.exports = plugin;
