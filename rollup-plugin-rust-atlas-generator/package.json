@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-rust-atlas-generator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generates an atlas from a directory pre-build.",
   "main": "index.js",
   "license": "MIT",
