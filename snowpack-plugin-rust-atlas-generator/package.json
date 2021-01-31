@@ -1,0 +1,21 @@
+{
+  "name": "snowpack-plugin-rust-atlas-generator",
+  "version": "0.1.0",
+  "description": "Generates an atlas from a directory pre-build.",
+  "main": "plugin.js",
+  "license": "MIT",
+  "collaborators": [
+    "SirJosh3917 <SirJosh3917@users.noreply.github.com>"
+  ],
+  "homepage": "https://github.com/SirJosh3917/rust-atlas-generator/tree/main/snowpack-plugin-rust-atlas-generator#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SirJosh3917/rust-atlas-generator.git"
+  },
+  "dependencies": {
+    "rust-atlas-generator-wasm": "^0.1.3"
+  },
+  "devDependencies": {
+    "snowpack": "^3.0.11"
+  }
+}
