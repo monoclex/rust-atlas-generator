@@ -51,7 +51,7 @@ module.exports = function rustAtlasGenerator(options) {
 			const writeJsonPromise = fs.writeFile(jsonPath, json);
 			const writePngPromise = fs.writeFile(pngPath, new Uint8Array(png));
 
-			await Promise.all(writeJsonPromise, writePngPromise);
+			await Promise.all([writeJsonPromise, writePngPromise]);
 		}
 	};
 };
