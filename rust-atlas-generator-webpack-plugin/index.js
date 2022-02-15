@@ -15,6 +15,7 @@ const plugin = ({ sourceDir, targetDir, width, height }) => {
     /** @type {[string, Promise<Buffer>][]} */
     const promises = files.map((file) => [file, fs.readFile(file)]);
     for (const [file, promise] of promises) {
+      if (path.extname(file) !== ".png") continue;
       buffers.push([path.basename(file, path.extname(file)), await promise]);
     }
 
